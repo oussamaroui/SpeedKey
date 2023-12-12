@@ -1,86 +1,76 @@
-// const SpeedKey = ({ text }) => {
-//     const lines = text.split(' ');
+import { useState, useEffect, useRef } from 'react';
 
-//     let letterNumber = 0;
-//     const check = e => {
-//         text[letterNumber] === e.target.value ? console.log('yes') : console.log('no');
-//         letterNumber++;
-//     }
-
-//     return (
-//         <>
-//             <div className="flex gap-[0.35rem] text-xl">
-//                 {lines.map((line, index) => (
-//                     <div key={index}>
-//                         {line.split('').map((char, charIndex) => (
-//                             <span key={charIndex}>{char}</span>
-//                         ))}
-//                     </div>
-//                 ))}
-//             </div>
-//             <br />
-//             <input type="text" className="border-2 shadow-lg" onChange={(e) => { check(e) }} />
-//         </>
-//     );
-// };
-
-// export default SpeedKey
-
-import { useState, useEffect } from 'react';
-
-const TypingSpeedTest = () => {
-    const [text, setText] = useState('');
+const SpeedKey = () => {
     const [input, setInput] = useState('');
-    const [startTime, setStartTime] = useState(null);
-    const [endTime, setEndTime] = useState(null);
+    const [startTime, setStartTime] = useState(15);
     const [showResult, setShowResult] = useState(false);
-
-    const sampleText =
-        'The quick brown fox jumps over the lazy dog. This is a sample text for typing speed test.';
+    const targetText =
+        'Any fool can write code that a computer can understand, Good programmers write code that humans can understand. Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program. There is always one more bug to fix';
+    const timerIdRef = useRef();
 
     useEffect(() => {
-        setStartTime(new Date());
-    }, []);
+        timerIdRef.current = setTimeout(() => {
+            setStartTime((prevTime) => prevTime - 1);
+        }, 1000);
+
+        return () => {
+            clearTimeout(timerIdRef.current);
+        };
+    }, [startTime]);
+
+    useEffect(() => {
+        if (startTime === 0) {
+            setShowResult(true);
+            clearTimeout(timerIdRef.current);
+        }
+    }, [startTime]);
 
     const handleInputChange = (e) => {
-        const inputValue = e.target.value;
-        setInput(inputValue);
-
-        if (inputValue === sampleText) {
-            setEndTime(new Date());
-            setShowResult(true);
-        }
+        setInput(e.target.value);
     };
 
     const calculateTypingSpeed = () => {
-        const totalTime = (endTime - startTime) / 1000; // in seconds
-        const wordsTyped = input.trim().split(/\s+/).length;
-        const typingSpeed = Math.round((wordsTyped / totalTime) * 60); // words per minute
+        const correctWords = input
+            .trim()
+            .split(/\s+/)
+            .filter((word, index) => word === targetText.split(/\s+/)[index]);
+
+        const typingSpeed = Math.round((correctWords.length / 30) * 60);
         return typingSpeed;
     };
 
     const renderColoredText = () => {
-        const correctLetters = input
-            .split('')
-            .map((letter, index) => (
-                <span
-                    key={index}
-                    style={{
-                        color: letter === sampleText[index] ? 'green' : 'red',
-                    }}
-                >
+        const targetTextArray = targetText.split('');
+        const userInputArray = input.split('');
+    
+        const coloredText = targetTextArray.map((letter, index) => {
+            let color = 'gray';
+    
+            if (index < userInputArray.length) {
+                if (userInputArray[index] === letter) {
+                    color = 'green';
+                } else {
+                    color = 'red';
+                }
+            }
+    
+            return (
+                <span key={index} style={{ color: color }}>
                     {letter}
                 </span>
-            ));
-
-        return <span>{correctLetters}</span>;
+            );
+        });
+    
+        return <span>{coloredText}</span>;
     };
+
 
     return (
         <div>
             <h1>Typing Speed Test</h1>
-            <p className='absolute'>{sampleText}</p>
-            <p className='relative'>{renderColoredText()}</p>
+            <p>{startTime}</p>
+            <p className='absolute top-20 left-0 opacity-50'>{targetText}</p>
+            <p className='absolute top-20 left-0'>{renderColoredText()}</p>
             <textarea
                 rows="5"
                 cols="50"
@@ -88,16 +78,16 @@ const TypingSpeedTest = () => {
                 onChange={handleInputChange}
                 placeholder="Start typing here..."
                 disabled={showResult}
+                className='opacity-1'
+                autoFocus
             />
             {showResult && (
                 <div>
-                    <p>
-                        Typing Speed: {calculateTypingSpeed()} words per minute
-                    </p>
+                    <p>Typing Speed: {calculateTypingSpeed()} words per minute</p>
                 </div>
             )}
         </div>
     );
 };
 
-export default TypingSpeedTest;
+export default SpeedKey;
