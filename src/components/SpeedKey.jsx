@@ -6,18 +6,24 @@ const SpeedKey = () => {
     const [startTime, setStartTime] = useState(15);
     const [showResult, setShowResult] = useState(false);
     const [level, setLevel] = useState(1);
+    const [correctCaracters, setCorrectCaracters] = useState(0);
+    const [totalTypedCharacters, setTotalTypedCharacters] = useState(0);
     const buttonsLevel = ['Easy', 'Medium', 'Hard'];
     const timerIdRef = useRef();
+    const inpt = useRef();
 
     useEffect(() => {
-        timerIdRef.current = setTimeout(() => {
-            setStartTime((prevTime) => prevTime - 1);
-        }, 1000);
 
-        return () => {
-            clearTimeout(timerIdRef.current);
-        };
-    }, [startTime]);
+        if (inpt.current.value != '') {
+            timerIdRef.current = setTimeout(() => {
+                setStartTime((prevTime) => prevTime - 1);
+            }, 1000);
+            return () => {
+                clearTimeout(timerIdRef.current);
+            };
+        }
+
+    }, [inpt.current, startTime]);
 
     useEffect(() => {
         if (startTime === 0) {
@@ -28,6 +34,11 @@ const SpeedKey = () => {
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
+
+        if (e.target.value[e.target.value.length - 1] !== ' ') {
+            setTotalTypedCharacters(totalTypedCharacters + 1)
+            console.log(totalTypedCharacters);
+        }        
     };
 
     const calculateTypingSpeed = () => {
@@ -45,62 +56,70 @@ const SpeedKey = () => {
         const userInputArray = input.split('');
 
         const coloredText = targetTextArray.map((letter, index) => {
-            let color = 'text-gray-500';
+            let color = 'text-gray-400';
+            let display = 'hidden';
 
             if (index < userInputArray.length) {
                 if (userInputArray[index] === letter) {
                     color = 'text-green-600';
+                    // setCorrectCaracters(correctCaracters + 1) ///////////////////
+                    // console.log(correctCaracters);
                 } else {
                     color = 'text-red-500';
                 }
             }
 
+            if (index === userInputArray.length) {
+                if (userInputArray[index] === letter) {
+                    display = 'inline';
+                } else {
+                    display = 'inline';
+                }
+            }
+
             return (
                 <span key={index} className={color}>
+                    <span className={`absolute text-purple-600 font-semibold animate-blink ${startTime == 0 ? 'hidden' : display}`}>|</span>
                     {letter}
                 </span>
             );
         });
 
-        return <span>{coloredText}</span>;
-    };
+        return coloredText;
+    }
 
     const getLevel = (l) => {
         setLevel(l)
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-            <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-                <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-                    <h1 className="text-center text-4xl font-bold mb-5">Typing Speed Test</h1>
-                    <p className="text-center text-4xl font-bold mb-5">{startTime}</p>
-                    <div className='flex bg-slate-600 w-auto'>
-                        {buttonsLevel.map((btnLevel, index) => (
-                            <p key={index} onClick={() => getLevel(index)}
-                                className={`py-1 px-2 m-[0.20rem] rounded ${level == index && 'bg-slate-400'} cursor-pointer`}>
-                                {btnLevel}
-                            </p>
-                        ))}
-                    </div>
-                    <p className='absolute top-20 left-0 opacity-50'>{Texts[level]}</p>
-                    <p className='absolute top-20 left-0'>{renderColoredText()}</p>
-                    <textarea
-                        onChange={handleInputChange}
-                        className="w-full h-[300px] bg-transparent outline-none resize-none text-xl mt-5"
-                        placeholder="Start typing here..."
-                    ></textarea>
-                    {showResult && (
-                        <div className="mt-5">
-                            <p className="text-2xl font-bold">
-                                Your Typing Speed is: {calculateTypingSpeed()} wpm
-                            </p>
-                        </div>
-                    )}
-                </div>
+        <section className="min-h-screen bg-gray-900 py-6 ">
+            <h1 className="text-center text-4xl font-bold text-white">Typing Speed Test</h1>
+            <div className='flex justify-around bg-gray-600 text-white w-56 mx-auto my-8 rounded'>
+                {buttonsLevel.map((btnLevel, index) => (
+                    <p key={index} onClick={() => getLevel(index)}
+                        className={`py-2 flex-1 text-center px-2 m-[0.16rem] rounded font-semibold ${level == index && 'bg-gradient-to-r from-violet-950 to-purple-900'} cursor-pointer`}>
+                        {btnLevel}
+                    </p>
+                ))}
             </div>
-        </div>
+            <p className="text-4xl font-bold my-3 text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500 ml-8">{startTime}</p>
+            <p className='text-2xl text-justify m-auto mx-12 tracking-wide'>{renderColoredText()}</p>
+            {showResult && (
+                <div className="mt-5">
+                    <p className="text-2xl text-white font-bold">
+                        Your Typing Speed is: {calculateTypingSpeed()} wpm
+                    </p>
+                </div>
+            )}
+            <textarea
+                onChange={handleInputChange}
+                className="bg-transparent outline-none resize-none text-sm opacity-0"
+                autoFocus
+                disabled={startTime == 0 ? true : false}
+                ref={inpt}
+            ></textarea>
+        </section>
     );
 };
 
