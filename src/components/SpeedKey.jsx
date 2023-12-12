@@ -44,18 +44,18 @@ const SpeedKey = () => {
         const userInputArray = input.split('');
     
         const coloredText = targetTextArray.map((letter, index) => {
-            let color = 'gray';
+            let color = 'text-gray-500';
     
             if (index < userInputArray.length) {
                 if (userInputArray[index] === letter) {
-                    color = 'green';
+                    color = 'text-green-600';
                 } else {
-                    color = 'red';
+                    color = 'text-red-500';
                 }
             }
     
             return (
-                <span key={index} style={{ color: color }}>
+                <span key={index} className={color}>
                     {letter}
                 </span>
             );
@@ -78,7 +78,7 @@ const SpeedKey = () => {
                 onChange={handleInputChange}
                 placeholder="Start typing here..."
                 disabled={showResult}
-                className='opacity-1'
+                className='opacity-0'
                 autoFocus
             />
             {showResult && (
