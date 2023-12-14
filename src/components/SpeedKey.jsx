@@ -111,7 +111,7 @@ const SpeedKey = () => {
             </div>
             <textarea
                 onChange={handleInputChange}
-                className="bg-transparent outline-non resize-none text-sm opacity-1"
+                className="bg-transparent outline-none resize-none text-sm opacity-0"
                 autoFocus
                 disabled={startTime == 0 ? true : false}
                 ref={inpt}
