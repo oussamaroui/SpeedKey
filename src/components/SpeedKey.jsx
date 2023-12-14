@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Texts from './Texts.json'
 import TypingStatsChart from './TypingStatsChart';
+import Accuracy from './Accuracy';
 
 const SpeedKey = () => {
     const [input, setInput] = useState('');
-    const [startTime, setStartTime] = useState(15);
-    const [showResult, setShowResult] = useState(false);
+    const [startTime, setStartTime] = useState(30);
     const [totalTypedCharacters, setTotalTypedCharacters] = useState(0);
     const [level, setLevel] = useState(1);
     const buttonsLevel = ['Easy', 'Medium', 'Hard'];
@@ -24,10 +24,8 @@ const SpeedKey = () => {
         }
     }, [inpt.current, startTime]);
 
-
     useEffect(() => {
         if (startTime === 0) {
-            setShowResult(true);
             clearTimeout(timerIdRef.current);
         }
     }, [startTime]);
@@ -79,7 +77,7 @@ const SpeedKey = () => {
 
             return (
                 <span key={index} className={color}>
-                    <span className={`absolute text-purple-600 font-semibold animate-blink ${startTime == 0 ? 'hidden' : display}`}>|</span>
+                    <span className={`absolute text-purple-600 font-semibold animate-blink ${!startTime ? 'hidden' : display}`}>|</span>
                     {letter}
                 </span>
             );
@@ -105,23 +103,15 @@ const SpeedKey = () => {
                     </p>
                 ))}
             </div>
-            <p className="text-4xl font-bold my-3 text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500 ml-8">{startTime}</p>
-            <p className='text-2xl text-justify m-auto mx-12 tracking-wide'>{renderColoredText()}</p>
-            {'showResult' && (
-                // <div className="text-2xl text-white font-bold mt-5">
-                //     <p>
-                //         Your Typing Speed is: <span className='text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500'>{calculateTypingSpeed()}</span> WPM
-                //         <span className='text-sm opacity-75 font-normal'> (Words Per Minute)</span>
-                //     </p>
-                //     <p>
-                //         Your Accuracy is: <span className='text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500'>{Math.floor(correctCharacters / totalTypedCharacters * 100)}%</span>
-                //     </p>
-                // </div>
-                <TypingStatsChart typingSpeed={calculateTypingSpeed()} accuracy={Math.floor(correctCharacters / totalTypedCharacters * 100)} />
-            )}
+            <p className="text-4xl font-bold my-3 text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500 text-center">{startTime}</p>
+            <p className='text-2xl text-justify m-auto mx-28 tracking-wide'>{renderColoredText()}</p>
+            <div className={`flex justify-around px-10 mt-10 ${!startTime ? 'opacity-1' : 'opacity-0'} ${startTime > 3 && 'hidden'}`}>
+                <TypingStatsChart typingSpeed={startTime === 0 ? calculateTypingSpeed() : 0} />
+                <Accuracy accuracy={startTime === 0 ? Math.floor(correctCharacters / totalTypedCharacters * 100) : 0} />
+            </div>
             <textarea
                 onChange={handleInputChange}
-                className="bg-transparent outline-none resize-none text-sm opacity-0"
+                className="bg-transparent outline-non resize-none text-sm opacity-1"
                 autoFocus
                 disabled={startTime == 0 ? true : false}
                 ref={inpt}
