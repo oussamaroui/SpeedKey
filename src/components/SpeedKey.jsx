@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import Texts from './Texts.json'
+import TypingStatsChart from './TypingStatsChart';
 
 const SpeedKey = () => {
     const [input, setInput] = useState('');
     const [startTime, setStartTime] = useState(15);
     const [showResult, setShowResult] = useState(false);
-    const [level, setLevel] = useState(1);
-    const [correctCaracters, setCorrectCaracters] = useState(0);
     const [totalTypedCharacters, setTotalTypedCharacters] = useState(0);
+    const [level, setLevel] = useState(1);
     const buttonsLevel = ['Easy', 'Medium', 'Hard'];
     const timerIdRef = useRef();
     const inpt = useRef();
+    let correctCharacters = 0;
 
     useEffect(() => {
-
-        if (inpt.current.value != '') {
+        if (inpt.current.value.length > 0) {
             timerIdRef.current = setTimeout(() => {
                 setStartTime((prevTime) => prevTime - 1);
             }, 1000);
@@ -22,8 +22,8 @@ const SpeedKey = () => {
                 clearTimeout(timerIdRef.current);
             };
         }
-
     }, [inpt.current, startTime]);
+
 
     useEffect(() => {
         if (startTime === 0) {
@@ -34,11 +34,11 @@ const SpeedKey = () => {
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
-
-        if (e.target.value[e.target.value.length - 1] !== ' ') {
-            setTotalTypedCharacters(totalTypedCharacters + 1)
-            console.log(totalTypedCharacters);
-        }        
+        if (e.nativeEvent.inputType !== 'deleteContentBackward') {
+            if (e.target.value[e.target.value.length - 1] !== ' ') {
+                setTotalTypedCharacters(totalTypedCharacters + 1);
+            }
+        }
     };
 
     const calculateTypingSpeed = () => {
@@ -46,7 +46,6 @@ const SpeedKey = () => {
             .trim()
             .split(/\s+/)
             .filter((word, index) => word === Texts[level].split(/\s+/)[index]);
-
         const typingSpeed = Math.round((correctWords.length / 30) * 60);
         return typingSpeed;
     };
@@ -62,8 +61,9 @@ const SpeedKey = () => {
             if (index < userInputArray.length) {
                 if (userInputArray[index] === letter) {
                     color = 'text-green-600';
-                    // setCorrectCaracters(correctCaracters + 1) ///////////////////
-                    // console.log(correctCaracters);
+                    if (letter != ' ') {
+                        correctCharacters++
+                    }
                 } else {
                     color = 'text-red-500';
                 }
@@ -88,9 +88,11 @@ const SpeedKey = () => {
         return coloredText;
     }
 
-    const getLevel = (l) => {
-        setLevel(l)
+    const getLevel = (lvl) => {
+        setLevel(lvl);
+        inpt.current.focus();
     }
+
 
     return (
         <section className="min-h-screen bg-gray-900 py-6 ">
@@ -105,12 +107,17 @@ const SpeedKey = () => {
             </div>
             <p className="text-4xl font-bold my-3 text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500 ml-8">{startTime}</p>
             <p className='text-2xl text-justify m-auto mx-12 tracking-wide'>{renderColoredText()}</p>
-            {showResult && (
-                <div className="mt-5">
-                    <p className="text-2xl text-white font-bold">
-                        Your Typing Speed is: {calculateTypingSpeed()} wpm
-                    </p>
-                </div>
+            {'showResult' && (
+                // <div className="text-2xl text-white font-bold mt-5">
+                //     <p>
+                //         Your Typing Speed is: <span className='text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500'>{calculateTypingSpeed()}</span> WPM
+                //         <span className='text-sm opacity-75 font-normal'> (Words Per Minute)</span>
+                //     </p>
+                //     <p>
+                //         Your Accuracy is: <span className='text-transparent bg-clip-text bg-gradient-to-b from-violet-800 to-purple-500'>{Math.floor(correctCharacters / totalTypedCharacters * 100)}%</span>
+                //     </p>
+                // </div>
+                <TypingStatsChart typingSpeed={calculateTypingSpeed()} accuracy={Math.floor(correctCharacters / totalTypedCharacters * 100)} />
             )}
             <textarea
                 onChange={handleInputChange}
